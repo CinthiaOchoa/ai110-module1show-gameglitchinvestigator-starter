@@ -1,24 +1,20 @@
 # 💭 Reflection: Game Glitch Investigator
 
-Answer each question in 3 to 5 sentences. Be specific and honest about what actually happened while you worked. This is about your process, not trying to sound perfect.
-
 ## 1. What was broken when you started?
 
-- What did the game look like the first time you ran it?
-- List at least two concrete bugs you noticed at the start  
-  (for example: "the hints were backwards").
+The game looked good when I first ran it, but after I started playing, I noticed several problems. The hint system kept telling me to guess a lower number every time I entered a guess. Eventually, I reached 0, but the game still said "lower," even though the instructions said the secret number should be between 0 and 100. This made it impossible to find the correct answer.
 
-**Bug Reproduction Log**
+Two other bugs I noticed were related to restarting the game and the attempts counter. The **New Game** button did not work properly because the game would not fully reset after the first round. The secret number seemed to stay the same until I refreshed the page. I also noticed that the attempts counter went into negative numbers, such as **-3**, on both Easy and Hard difficulty levels. In addition, the **Show Hint** checkbox did not appear to do anything because hints were shown whether the option was checked or not.
 
-Document at least 3 bugs you found. Add rows as needed.
+## Bug Reproduction Log
 
-| Input | Expected Behavior | Actual Behavior | Console Output / Error |
-|-------|-------------------|-----------------|------------------------|
-| | | | |
-| | | | |
-| | | | |
+| Input / Action                                 | Expected Behavior                                                           | Actual Behavior                                             | Console Output / Error |
+| ---------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------- |
+| Keep guessing numbers until reaching 0         | The game should provide correct hints and stop when no valid guesses remain | The hint continued saying "Lower" even when the guess was 0 | No error shown         |
+| Click **New Game** after finishing a round     | The game should reset with a new secret number                              | The game did not fully reset until the page was refreshed   | No error shown         |
+| Select Easy or Hard mode and continue guessing | Attempts should decrease to 0 and stop                                      | Attempts continued into negative values (for example, -3)   | No error shown         |
+| Check and uncheck the **Show Hint** option     | Hints should only appear when enabled                                       | Hints appeared regardless of the checkbox state             | No error shown         |
 
----
 
 ## 2. How did you use AI as a teammate?
 

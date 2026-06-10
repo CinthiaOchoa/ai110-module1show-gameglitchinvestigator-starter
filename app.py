@@ -1,6 +1,16 @@
 import random
 import streamlit as st
 
+from logic_utils import (
+    get_range_for_difficulty,
+    parse_guess,
+    check_guess,
+    update_score,
+)
+
+# check_guess now lives in logic_utils.py (moved out of app.py).
+from logic_utils import check_guess
+
 def get_range_for_difficulty(difficulty: str):
     if difficulty == "Easy":
         return 1, 20
@@ -27,24 +37,6 @@ def parse_guess(raw: str):
         return False, None, "That is not a number."
 
     return True, value, None
-
-
-def check_guess(guess, secret):
-    if guess == secret:
-        return "Win", "🎉 Correct!"
-
-    try:
-        if guess > secret:
-            return "Too High", "📈 Go HIGHER!"
-        else:
-            return "Too Low", "📉 Go LOWER!"
-    except TypeError:
-        g = str(guess)
-        if g == secret:
-            return "Win", "🎉 Correct!"
-        if g > secret:
-            return "Too High", "📈 Go HIGHER!"
-        return "Too Low", "📉 Go LOWER!"
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
@@ -93,7 +85,8 @@ if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
 if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
+    # FIX: attempts must start at 0, not 1 (otherwise a turn is lost instantly).
+    st.session_state.attempts = 0
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -104,11 +97,17 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+# Remember the most recent hint so it can be shown later without re-submitting.
+if "last_hint" not in st.session_state:
+    st.session_state.last_hint = ""
+
 st.subheader("Make a guess")
 
+# FIX: clamp with max(0, ...) so "Attempts left" never shows a negative number.
+attempts_left = max(0, attempt_limit - st.session_state.attempts)
 st.info(
     f"Guess a number between 1 and 100. "
-    f"Attempts left: {attempt_limit - st.session_state.attempts}"
+    f"Attempts left: {attempts_left}"
 )
 
 with st.expander("Developer Debug Info"):
@@ -132,8 +131,17 @@ with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
 if new_game:
+    # FIX: fully reset the game so nothing from the old round leaks in.
+    st.session_state.secret = random.randint(low, high)  # new secret in the current difficulty range
     st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    st.session_state.score = 0
+    st.session_state.status = "playing"
+    st.session_state.history = []
+    st.session_state.last_hint = ""
+    # Clear the guess box (its text is stored in session_state under this key).
+    input_key = f"guess_input_{difficulty}"
+    if input_key in st.session_state:
+        del st.session_state[input_key]
     st.success("New game started.")
     st.rerun()
 
@@ -155,15 +163,14 @@ if submit:
     else:
         st.session_state.history.append(guess_int)
 
-        if st.session_state.attempts % 2 == 0:
-            secret = str(st.session_state.secret)
-        else:
-            secret = st.session_state.secret
+        # FIX: always compare numbers. The old code sometimes turned the
+        # secret into a string, which broke the > / < comparisons.
+        secret = st.session_state.secret
 
         outcome, message = check_guess(guess_int, secret)
 
-        if show_hint:
-            st.warning(message)
+        # Save the latest hint so it can be displayed any time the checkbox is on.
+        st.session_state.last_hint = message
 
         st.session_state.score = update_score(
             current_score=st.session_state.score,
@@ -186,6 +193,12 @@ if submit:
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+# FIX: show the hint based on the checkbox, separate from submitting a guess.
+# Because this runs on every rerun, checking "Show hint" displays the last
+# guess's hint immediately — no need to submit again, so no extra attempt is used.
+if show_hint and st.session_state.last_hint:
+    st.warning(st.session_state.last_hint)
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")
