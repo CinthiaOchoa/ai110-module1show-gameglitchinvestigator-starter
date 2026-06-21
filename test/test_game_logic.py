@@ -1,7 +1,11 @@
 """Tests for the guessing-game logic in logic_utils.py."""
 
-from logic_utils import check_guess
+import sys
+from pathlib import Path
 
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+from logic_utils import check_guess
 
 def test_guess_too_high_says_go_lower():
     # 60 is higher than the secret 50, so the player should be told to go LOWER.

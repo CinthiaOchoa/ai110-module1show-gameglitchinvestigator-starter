@@ -18,30 +18,32 @@ Two other bugs I noticed were related to restarting the game and the attempts co
 
 ## 2. How did you use AI as a teammate?
 
-- Which AI tools did you use on this project (for example: ChatGPT, Gemini, Copilot)?
-- Give one example of an AI suggestion that was correct (including what the AI suggested and how you verified the result).
-- Give one example of an AI suggestion that was incorrect or misleading (including what the AI suggested and how you verified the result).
+I used Cloud as my AI coding assistant to help understand the bugs in the guessing game. I attached the project files, especially `app.py` and `logic_utils.py`, so the AI could explain the logic and help me identify why the game was not behaving correctly.
+
+One correct AI suggestion was that the higher/lower hint logic was reversed. The game was telling the player to go lower or higher at the wrong time, so I fixed `check_guess()` in `logic_utils.py`. I verified this by testing guesses below, above, and equal to the secret number.
+
+One AI suggestion that I still had to review carefully was related to moving logic into `logic_utils.py`. I had to make sure the functions were not duplicated incorrectly in `app.py` and that the app was still using the correct imported functions.
 
 ---
-
 ## 3. Debugging and testing your fixes
 
-- How did you decide whether a bug was really fixed?
-- Describe at least one test you ran (manual or using pytest)  
-  and what it showed you about your code.
-- Did AI help you design or understand any tests? How?
+I ran the starter pytest tests included with the project to verify the core logic. The tests checked that a guess higher than the secret says to go lower, a guess lower than the secret says to go higher, and a correct guess returns a win.
+
+The tests passed after I fixed the `check_guess()` function in `logic_utils.py`. This confirmed that the high/low hint logic worked correctly.
+
 
 ---
 
 ## 4. What did you learn about Streamlit and state?
 
-- How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+Streamlit reruns the script from top to bottom every time the user interacts with the app, such as clicking a button or entering text. This means normal variables can reset unless they are saved in `st.session_state`.
 
----
+I learned that session state is important for games because it keeps track of values like the secret number, attempts, score, status, and history between user actions.
 
 ## 5. Looking ahead: your developer habits
 
-- What is one habit or strategy from this project that you want to reuse in future labs or projects?
-  - This could be a testing habit, a prompting strategy, or a way you used Git.
-- What is one thing you would do differently next time you work with AI on a coding task?
-- In one or two sentences, describe how this project changed the way you think about AI generated code.
+One habit I want to reuse in future projects is writing down bugs in a clear reproduction table before fixing them. This makes it easier to understand what is wrong and verify whether the fix actually worked.
+
+Next time I work with AI on a coding task, I would ask for smaller explanations and test each suggestion before changing too much code at once.
+
+This project changed the way I think about AI-generated code because I learned that AI code can look correct but still have hidden logic problems. I should always run, test, and review the code instead of trusting it immediately.
