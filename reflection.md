@@ -27,9 +27,9 @@ One AI suggestion that I still had to review carefully was related to moving log
 ---
 ## 3. Debugging and testing your fixes
 
-I decided a bug was fixed by replaying the same steps that originally caused the problem. For example, I tested guesses that were too high, too low, and correct to make sure the hint messages matched the expected behavior.
+I ran the starter pytest tests included with the project to verify the core logic. The tests checked that a guess higher than the secret says to go lower, a guess lower than the secret says to go higher, and a correct guess returns a win.
 
-I also ran `pytest` to test the main game logic. The tests checked that a guess higher than the secret says to go lower, a guess lower than the secret says to go higher, and a correct guess returns a win. The tests passed, which showed that the core guessing logic was working correctly.
+The tests passed after I fixed the `check_guess()` function in `logic_utils.py`. This confirmed that the high/low hint logic worked correctly.
 
 
 ---

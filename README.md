@@ -30,6 +30,9 @@ Describe your fixed game in numbered steps so a reader can follow along without 
 
 
 
+
+
+
 ## 🚀 Stretch Features
 
 * [ ] No stretch features attempted.
