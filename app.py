@@ -8,53 +8,8 @@ from logic_utils import (
     update_score,
 )
 
-# check_guess now lives in logic_utils.py (moved out of app.py).
-from logic_utils import check_guess
-
-def get_range_for_difficulty(difficulty: str):
-    if difficulty == "Easy":
-        return 1, 20
-    if difficulty == "Normal":
-        return 1, 100
-    if difficulty == "Hard":
-        return 1, 50
-    return 1, 100
-
-
-def parse_guess(raw: str):
-    if raw is None:
-        return False, None, "Enter a guess."
-
-    if raw == "":
-        return False, None, "Enter a guess."
-
-    try:
-        if "." in raw:
-            value = int(float(raw))
-        else:
-            value = int(raw)
-    except Exception:
-        return False, None, "That is not a number."
-
-    return True, value, None
-
-
-def update_score(current_score: int, outcome: str, attempt_number: int):
-    if outcome == "Win":
-        points = 100 - 10 * (attempt_number + 1)
-        if points < 10:
-            points = 10
-        return current_score + points
-
-    if outcome == "Too High":
-        if attempt_number % 2 == 0:
-            return current_score + 5
-        return current_score - 5
-
-    if outcome == "Too Low":
-        return current_score - 5
-
-    return current_score
+# FIX: Core game logic was refactored into logic_utils.py with AI help.
+# I reviewed the changes and verified them with pytest and manual Streamlit testing.
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
@@ -85,7 +40,7 @@ if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
 if "attempts" not in st.session_state:
-    # FIX: attempts must start at 0, not 1 (otherwise a turn is lost instantly).
+    # FIX: attempts must start at 0, not 1.
     st.session_state.attempts = 0
 
 if "score" not in st.session_state:
@@ -97,16 +52,16 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# Remember the most recent hint so it can be shown later without re-submitting.
 if "last_hint" not in st.session_state:
     st.session_state.last_hint = ""
 
 st.subheader("Make a guess")
 
-# FIX: clamp with max(0, ...) so "Attempts left" never shows a negative number.
+# FIX: prevents attempts left from showing negative numbers.
 attempts_left = max(0, attempt_limit - st.session_state.attempts)
+
 st.info(
-    f"Guess a number between 1 and 100. "
+    f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempts_left}"
 )
 
@@ -123,25 +78,29 @@ raw_guess = st.text_input(
 )
 
 col1, col2, col3 = st.columns(3)
+
 with col1:
     submit = st.button("Submit Guess 🚀")
+
 with col2:
     new_game = st.button("New Game 🔁")
+
 with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
 if new_game:
-    # FIX: fully reset the game so nothing from the old round leaks in.
-    st.session_state.secret = random.randint(low, high)  # new secret in the current difficulty range
+    # FIX: fully reset the game so old round data does not remain.
+    st.session_state.secret = random.randint(low, high)
     st.session_state.attempts = 0
     st.session_state.score = 0
     st.session_state.status = "playing"
     st.session_state.history = []
     st.session_state.last_hint = ""
-    # Clear the guess box (its text is stored in session_state under this key).
+
     input_key = f"guess_input_{difficulty}"
     if input_key in st.session_state:
         del st.session_state[input_key]
+
     st.success("New game started.")
     st.rerun()
 
@@ -163,13 +122,11 @@ if submit:
     else:
         st.session_state.history.append(guess_int)
 
-        # FIX: always compare numbers. The old code sometimes turned the
-        # secret into a string, which broke the > / < comparisons.
+        # FIX: compare the numeric guess against the saved secret number.
         secret = st.session_state.secret
 
         outcome, message = check_guess(guess_int, secret)
 
-        # Save the latest hint so it can be displayed any time the checkbox is on.
         st.session_state.last_hint = message
 
         st.session_state.score = update_score(
@@ -194,9 +151,7 @@ if submit:
                     f"Score: {st.session_state.score}"
                 )
 
-# FIX: show the hint based on the checkbox, separate from submitting a guess.
-# Because this runs on every rerun, checking "Show hint" displays the last
-# guess's hint immediately — no need to submit again, so no extra attempt is used.
+# FIX: the hint only appears when the checkbox is enabled.
 if show_hint and st.session_state.last_hint:
     st.warning(st.session_state.last_hint)
 
